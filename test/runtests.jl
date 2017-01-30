@@ -72,6 +72,7 @@ umc = UE.matchchar
         
 @testset "lookupname" begin
     @test UE.lookupname("foobar")   == ""
+    @test EE.lookupname(SubString("My name is Spock", 12)) == ""
     @test UE.lookupname("end of text") == "\x03" # \3
     @test UE.lookupname("TIBETAN LETTER -A") == "\u0f60"
     @test UE.lookupname("LESS-THAN OR SLANTED EQUAL TO") == "\u2a7d"
@@ -79,7 +80,9 @@ umc = UE.matchchar
 end
 
 @testset "matches" begin
+    @test isempty(UE.matches(""))
     @test isempty(UE.matches("\uf900"))
+    @test isempty(UE.matches(SubString("This is \uf900", 9)))
     for (chrs, exp) in (("\U1f596", ["RAISED HAND WITH PART BETWEEN MIDDLE AND RING FINGERS"]),
                         ("\u0f4a", ["TIBETAN LETTER REVERSED TA"]),
                         (".", ["FULL STOP", "PERIOD"]))
@@ -91,6 +94,7 @@ end
 
 @testset "longestmatches" begin
     @test isempty(UE.longestmatches("\uf900 abcd"))
+    @test isempty(UE.longestmatches(SubString("This is \uf900 abcd", 9)))
     for (chrs, exp) in (("\U1f596 abcd", ["RAISED HAND WITH PART BETWEEN MIDDLE AND RING FINGERS"]),
                         (".abcd", ["FULL STOP", "PERIOD"]),
                         ("\u0f4a#123", ["TIBETAN LETTER REVERSED TA", "TIBETAN LETTER TTA"]))
@@ -102,6 +106,7 @@ end
 
 @testset "completions" begin
     @test isempty(UE.completions("ScottPaulJones"))
+    @test isempty(EE.completions(SubString("My name is Scott", 12)))
     for (chrs, exp) in (("ZERO", ["ZERO WIDTH JOINER", "ZERO WIDTH NO-BREAK SPACE",
                                   "ZERO WIDTH NON-JOINER", "ZERO WIDTH SPACE"]),
                         ("BACK OF", ["BACK OF ENVELOPE"]))
