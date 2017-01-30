@@ -23,7 +23,22 @@ PackedEntities(tab::PackedTable) = PackedEntities(tab.offsetvec, tab.namtab)
 Base.getindex(str::PackedEntities, ind::Integer) =
     _unpackword(str.namtab[str.offsetvec[ind]+1:str.offsetvec[ind+1]])
 
-include("unicode_table.jl")
+VER = UInt32(1)
+
+immutable Unicode_Table{S,T,V} <: AbstractEntityTable
+    ver::UInt32
+    tim::String
+    inf::String
+    base32::UInt32
+    nam::PackedTable{S,V}	# This has packed byte vectors
+    ind::Vector{UInt16}
+    wrd1::StrTable{T}           # This has sorted words for 1-byte
+    wrd2::StrTable{T}           # This has sorted words for 2-byte
+    val16::Vector{UInt16}
+    ind16::Vector{UInt16}
+    val32::Vector{UInt16}
+    ind32::Vector{UInt16}
+end
 
 function __init__()
     const global _tab =
@@ -87,31 +102,26 @@ function _get_strings{T}(val::T, tab::Vector{T}, ind::Vector{UInt16})
     _names[ind[rng]]
 end
 
-"""Given a Unicode name, return the string it represents, or an empty string if not found"""
 function lookupname(str::AbstractString)
     rng = searchsorted(_names, uppercase(str))
     isempty(rng) ? _empty_str : _get_str(_tab.ind[rng.start])
 end
 
-"""Given a character, return all exact matches to the character as a vector"""
 matchchar(ch::Char) =
     (ch <= '\uffff'
      ? _get_strings(ch%UInt16, _tab.val16, _tab.ind16)
      : (ch <= '\U1ffff' ? _get_strings(ch%UInt16, _tab.val32, _tab.ind32) : _empty_str_vec))
 
-"""Given a string, return all exact matches to the string as a vector"""
-function matches end
 matches(str::AbstractString) = matches(convert(Vector{Char}, str))
 matches(vec::Vector{Char}) = length(vec) == 1 ? matchchar(vec[1]) : _empty_str_vec
 
-"""Given a string, return all of the longest matches to the beginning of the string as a vector"""
-function longestmatches end
 longestmatches(str::AbstractString) = longestmatches(convert(Vector{Char},str))
 longestmatches(vec::Vector{Char}) = isempty(vec) ? _empty_str_vec : matchchar(uppercase(vec[1]))
 
-"""Given a string, return all of the Unicode entity names that start with that string, if any"""
-function completions end
 completions(str::AbstractString) = completions(String(str))
-completions(str::String) = StrTables.matchfirst(_names, uppercase(str))
+function completions(str::String)
+    str = uppercase(str)
+    [nam for nam in _names if startswith(nam, str)]
+end
 
 end # module

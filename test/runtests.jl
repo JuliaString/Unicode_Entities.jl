@@ -100,17 +100,15 @@ end
     end
 end
 
-#=
 @testset "completions" begin
     @test isempty(UE.completions("ScottPaulJones"))
-    for (chrs, exp) in (("A", ["AA", "AE", "Alpha"]),
-                        ("mtt", ["mtta", "mttthree", "mttzero"]),
-                        ("nleq", ["nleq", "nleqslant"]))
+    for (chrs, exp) in (("ZERO", ["ZERO WIDTH JOINER", "ZERO WIDTH NO-BREAK SPACE",
+                                  "ZERO WIDTH NON-JOINER", "ZERO WIDTH SPACE"]),
+                        ("BACK OF", ["BACK OF ENVELOPE"]))
         res = UE.completions(chrs)
         @test length(res) >= length(exp)
         @test intersect(res, exp) == exp
     end
 end
-=#
 end
 
