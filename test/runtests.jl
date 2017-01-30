@@ -72,7 +72,7 @@ umc = UE.matchchar
         
 @testset "lookupname" begin
     @test UE.lookupname("foobar")   == ""
-    @test EE.lookupname(SubString("My name is Spock", 12)) == ""
+    @test UE.lookupname(SubString("My name is Spock", 12)) == ""
     @test UE.lookupname("end of text") == "\x03" # \3
     @test UE.lookupname("TIBETAN LETTER -A") == "\u0f60"
     @test UE.lookupname("LESS-THAN OR SLANTED EQUAL TO") == "\u2a7d"
@@ -106,7 +106,7 @@ end
 
 @testset "completions" begin
     @test isempty(UE.completions("ScottPaulJones"))
-    @test isempty(EE.completions(SubString("My name is Scott", 12)))
+    @test isempty(UE.completions(SubString("My name is Scott", 12)))
     for (chrs, exp) in (("ZERO", ["ZERO WIDTH JOINER", "ZERO WIDTH NO-BREAK SPACE",
                                   "ZERO WIDTH NON-JOINER", "ZERO WIDTH SPACE"]),
                         ("BACK OF", ["BACK OF ENVELOPE"]))
