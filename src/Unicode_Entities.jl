@@ -15,7 +15,11 @@ module Unicode_Entities
 
 using StrTables
 
-immutable PackedEntities{S,T} <: AbstractPackedTable{String}
+if isdefined(Base, :Unicode)
+    using Base.Unicode: uppercase
+end
+
+struct PackedEntities{S,T} <: AbstractPackedTable{String}
     offsetvec::Vector{T}
     namtab::Vector{S}
 end
@@ -25,7 +29,7 @@ Base.getindex(str::PackedEntities, ind::Integer) =
 
 VER = UInt32(1)
 
-immutable Unicode_Table{S,T,V} <: AbstractEntityTable
+struct Unicode_Table{S,T,V} <: AbstractEntityTable
     ver::UInt32
     tim::String
     inf::String
@@ -96,7 +100,7 @@ end
 _get_str(ind) =
     string(Char(ind <= _tab.base32 ? _tab.val16[ind] : _tab.val32[ind - _tab.base32] + 0x10000))
     
-function _get_strings{T}(val::T, tab::Vector{T}, ind::Vector{UInt16})
+function _get_strings(val::T, tab::Vector{T}, ind::Vector{UInt16}) where {T}
     rng = searchsorted(tab, val)
     isempty(rng) && return _empty_str_vec
     _names[ind[rng]]
@@ -107,10 +111,11 @@ function lookupname(str::AbstractString)
     isempty(rng) ? _empty_str : _get_str(_tab.ind[rng.start])
 end
 
-matchchar(ch::Char) =
-    (ch <= '\uffff'
+matchchar(ch::UInt32) =
+    (ch <= 0x0ffff
      ? _get_strings(ch%UInt16, _tab.val16, _tab.ind16)
-     : (ch <= '\U1ffff' ? _get_strings(ch%UInt16, _tab.val32, _tab.ind32) : _empty_str_vec))
+     : (ch <= 0x1ffff ? _get_strings(ch%UInt16, _tab.val32, _tab.ind32) : _empty_str_vec))
+matchchar(ch::Char) = matchchar(UInt32(ch))
 
 matches(str::AbstractString) = matches(convert(Vector{Char}, str))
 matches(vec::Vector{Char}) = length(vec) == 1 ? matchchar(vec[1]) : _empty_str_vec
@@ -124,4 +129,4 @@ function completions(str::String)
     [nam for nam in _names if startswith(nam, str)]
 end
 
-end # module
+end # module Unicode_Entities
