@@ -6,32 +6,19 @@ const VER = UInt32(1)
 
 const datapath = joinpath(Pkg.dir(), "Unicode_Entities", "data")
 const dpath = "http://ftp.unicode.org/Public/UNIDATA/"
-const fname = "UnicodeData.txt"
+const inpname = "UnicodeData.txt"
+const fname = "unicode.dat"
 const disp = [false]
-
-function sortsplit!{T}(index::Vector{UInt16}, vec::Vector{Tuple{T, UInt16}}, base)
-    sort!(vec)
-    len = length(vec)
-    valvec = Vector{T}(len)
-    indvec = Vector{UInt16}(len)
-    for (i, val) in enumerate(vec)
-        valvec[i], ind = val
-        indvec[i] = ind
-        index[ind] = UInt16(base + i)
-    end
-    base += len
-    valvec, indvec, base
-end
 
 const _empty_string = ""
 const _empty_val = (false, ' ', _empty_string, _empty_string)
 
-function process_line{T<:AbstractString}(vec::Vector{T})
+function process_line(vec::Vector{T}) where {T<:AbstractString}
     length(vec) < 11 && return _empty_val
     num = vec[1]
     str = vec[2]
     alias = vec[11]
-    ch = Char(parse(UInt32, num, 16))
+    ch = parse(UInt32, num, 16)
     str[1] == '<' &&
         return str == "<control>" ? (alias != "", ch, _empty_string, alias) : _empty_val
     # Don't save names that simply contain hex representation
@@ -39,19 +26,19 @@ function process_line{T<:AbstractString}(vec::Vector{T})
     pos = sizeof(str) - len
     pos > 1 && str[pos] == '-' && str[pos+1:end] == num && return _empty_val
     # Check for some characters we won't represent, all outside of BMP range
-    ch <= '\uffff' && return (true, ch, str, alias)
+    ch <= 0x0ffff && return (true, ch, str, alias)
     # Ignore characters in Linear B range (0x10000-0x100ff)
-    '\U10000' <= ch < '\U10100' && return _empty_val
+    0x10000 <= ch < 0x10100 && return _empty_val
     # Ignore characters in Linear A range (0x10600-0x107ff)
-    '\U10600' <= ch < '\U10800' && return _empty_val
+    0x10600 <= ch < 0x10800 && return _empty_val
     # Ignore characters in hieroglyph range (0x13000-0x14fff)
-    '\U13000' <= ch < '\U15000' && return _empty_val
+    0x13000 <= ch < 0x15000 && return _empty_val
     # Ignore characters in Tangut range (0x17000-0x18fff)
-    '\U17000' <= ch < '\U19000' && return _empty_val
+    0x17000 <= ch < 0x19000 && return _empty_val
     # Ignore characters in Greek vocal/instrumental range (0x1d200-0x1d2ff)
-    '\U1d000' <= ch < '\U1d300' && return _empty_val
+    0x1d000 <= ch < 0x1d300 && return _empty_val
     # Don't worry about characters outside of BMP/SMP1
-    ch > '\U1FFFF' && return _empty_val
+    ch > 0x1FFFF && return _empty_val
     (true, ch, str, alias)
 end
 
@@ -66,10 +53,10 @@ function load_unicode_data(datapath, dpath, fname)
         download(src, lname)
         println("Saved to: ", lname)
     end
-    symnam = Vector{String}()
-    symval = Vector{Char}()
-    aliasnam = Vector{String}()
-    aliasval = Vector{Char}()
+    symnam = String[]
+    symval = UInt32[]
+    aliasnam = String[]
+    aliasval = UInt32[]
     count = lines = aliascnt = 0
     open(lname, "r") do f
         while (l = chomp(readline(f))) != ""
@@ -107,13 +94,13 @@ end
 
 function split_tables(srtval)
     # BMP characters
-    l16 = Vector{Tuple{UInt16, UInt16}}()
+    l16 = Tuple{UInt16, UInt16}[]
     # non-BMP characters (in range 0x10000 - 0x1ffff)
-    l32 = Vector{Tuple{UInt16, UInt16}}()
+    l32 = Tuple{UInt16, UInt16}[]
 
     for (i, ch) in enumerate(srtval)
-        ch > '\U1ffff' && error("Character $ch too large: $(UInt32(ch))")
-        push!(ch > '\uffff' ? l32 : l16, (ch%UInt16, i))
+        ch > 0x1ffff && error("Character $ch too large")
+        push!(ch > 0x0ffff ? l32 : l16, (ch%UInt16, i))
     end
 
     # We now have 2 vectors, one for single BMP characters, the other for SMP-1 characters
@@ -124,7 +111,7 @@ function split_tables(srtval)
     # in each table to the index into the name table (so that we can find multiple names for
     # each character)
 
-    indvec = Vector{UInt16}(length(srtval))
+    indvec = create_vector(UInt16, length(srtval))
     vec16, ind16, base32 = sortsplit!(indvec, l16, 0)
     vec32, ind32, base2c = sortsplit!(indvec, l32, base32)
 
@@ -149,7 +136,7 @@ function create_map(wrd_vec, wrd_dict, tab1, tab2)
     wrdmap, map1, map2
 end
 
-keepword(str) = !ismatch(r"^[A-Z0-9\-]+$", str)
+keepword(str) = !_contains(str, r"^[A-Z0-9\-]+$")
 
 function outseg!(out, str)
     for ch in str
@@ -158,7 +145,7 @@ function outseg!(out, str)
 end
 
 function packword(inpvec::Vector, wrdmap, wrd_vec, wrd_dict)
-    out = Vector{UInt8}()
+    out = UInt8[]
     hasparts = false
     prevw = 0x0000
     for val16 in inpvec
@@ -196,22 +183,22 @@ function packword(inpvec::Vector, wrdmap, wrd_vec, wrd_dict)
     out
 end
 
-function split_words{T<:AbstractString}(input::Vector{T})
+function split_words(input::Vector{<:AbstractString})
     wrd_dict = Dict{String, Int}()
-    wrd_vec  = Vector{String}()
-    wrd_frq  = Vector{Int}()
-    wrd_loc  = Vector{UInt16}()
-    str_vec  = Vector{Vector{UInt16}}(length(input))
+    wrd_vec  = String[]
+    wrd_frq  = Int[]
+    wrd_loc  = UInt16[]
+    str_vec  = create_vector(Vector{UInt16}, length(input))
     #=
     part_dic = Dict{String, Int}()
-    part_vec = Vector{String}()
-    part_frq = Vector{Int}()
-    wrd_parts = Vector{Vector{UInt16}}()
+    part_vec = String[]
+    part_frq = Int[]
+    wrd_parts = Vector{UInt16}[]
     =#
     ind = 0
     for (i, wrd) in enumerate(input)
         allwrds = split(wrd, ' ')
-        outwrds = Vector{UInt16}()
+        outwrds = UInt16[]
         for onewrd in allwrds
             val = get(wrd_dict, onewrd, 0)
             if val == 0
@@ -253,8 +240,8 @@ function split_words{T<:AbstractString}(input::Vector{T})
     # This has indexes into wrd_vec for words that will end up as 2-bytes
     table2 = [wrdsav[i][2] for i=203:length(wrdsav)]
     # Calculate the savings of remaining words, i.e. frequency * (length-2) (some will become 0)
-    savfrq = Vector{Int}()
-    savval = Vector{UInt16}()
+    savfrq = Int[]
+    savval = UInt16[]
     for i in table2
         savings = (wrd_frq[i]-1)*(sizeof(wrd_vec[i])-2)
         if savings > 2 || keepword(wrd_vec[i])
@@ -267,31 +254,35 @@ function split_words{T<:AbstractString}(input::Vector{T})
     wrd_map, map1, map2 = create_map(wrd_vec, wrd_dict, table1, savval)
 
     # Pack words
-    ent_map = Vector{Vector{UInt8}}(length(str_vec))
+    ent_map = create_vector(Vector{UInt8}, length(str_vec))
     for (i, vec16) in enumerate(str_vec)
 	ent_map[i] = packword(vec16, wrd_map, wrd_vec, wrd_dict)
     end
     PackedTable(ent_map), StrTable(map1), StrTable(map2)
 end
 
-function make_tables(savfile, datapath, dpath, fname)
-    try
-        symnam, symval, src = load_unicode_data(datapath, dpath, fname)
-        srtind = sortperm(symnam)
-        srtnam = symnam[srtind]
-        srtval = symval[srtind]
-        entmap, map1, map2 = split_words(srtnam)
-        println("Creating tables")
-        base32, indvec, vec16, ind16, vec32, ind32 = split_tables(srtval)
-        println("Saving tables to ", savfile)
-        StrTables.save(savfile,
-                       (VER, string(now()), src, base32, entmap, indvec, map1, map2,
-                        vec16, ind16, vec32, ind32))
-        println("Done")
-    catch ex
-        println("Error in make_tables: ", sprint(showerror, ex, catch_backtrace()))
-    end
+function make_tables(datapath, dpath, fname)
+    symnam, symval, src = load_unicode_data(datapath, dpath, fname)
+    srtind = sortperm(symnam)
+    srtnam = symnam[srtind]
+    srtval = symval[srtind]
+    entmap, map1, map2 = split_words(srtnam)
+    println("Creating tables")
+    base32, indvec, vec16, ind16, vec32, ind32 = split_tables(srtval)
+    (VER, string(now()), src, base32, entmap, indvec, map1, map2, vec16, ind16, vec32, ind32)
 end
 
-savfile = joinpath(datapath, "unicode.dat")
-!isfile(savfile) && make_tables(savfile, datapath, dpath, fname)
+println("Creating tables")
+savfile = joinpath(datapath, fname)
+tup = nothing
+if !isfile(savfile)
+    try
+        global tup
+        tup = make_tables(datapath, dpath, inpname)
+    catch ex
+        println(sprint(showerror, ex, catch_backtrace()))
+    end
+    println("Saving tables to ", savfile)
+    StrTables.save(savfile, tup)
+end
+println("Done")

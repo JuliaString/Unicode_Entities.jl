@@ -15,10 +15,6 @@ module Unicode_Entities
 
 using StrTables
 
-if isdefined(Base, :Unicode)
-    using Base.Unicode: uppercase
-end
-
 struct PackedEntities{S,T} <: AbstractPackedTable{String}
     offsetvec::Vector{T}
     namtab::Vector{S}
