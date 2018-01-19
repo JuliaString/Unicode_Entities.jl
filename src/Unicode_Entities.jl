@@ -41,9 +41,9 @@ struct Unicode_Table{S,T,V} <: AbstractEntityTable
 end
 
 function __init__()
-    const global _tab =
+    global _tab =
         Unicode_Table(StrTables.load(joinpath(Pkg.dir("Unicode_Entities"), "data", "unicode.dat"))...)
-    const global _names = PackedEntities(_tab.nam)
+    global _names = PackedEntities(_tab.nam)
 end
 
 const _empty_str = ""
