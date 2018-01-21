@@ -14,7 +14,6 @@ __precompile__()
 module Unicode_Entities
 
 using StrTables
-import StrTables: matchchar, matches, longmatches, _get_strings, _empty_str_vec
 
 struct PackedEntities{S,T} <: AbstractPackedTable{String}
     offsetvec::Vector{T}
@@ -118,7 +117,9 @@ StrTables.matches(ent::Unicode_Entity, vec::Vector{T}) where {T} =
 StrTables.longestmatches(ent::Unicode_Entity, vec::Vector{T}) where {T} =
     isempty(vec) ? StrTables._empty_str_vec : matchchar(ent, uppercase(vec[1]))
 
-StrTables.completions(ent::Unicode_Entity, str) =
-     [nam for nam in ent.nam if startswith(nam, str)]
+function StrTables.completions(ent::Unicode_Entity, str)
+    up = uppercase(str)
+    [nam for nam in ent.nam if startswith(nam, up)]
+end
 
 end # module Unicode_Entities
