@@ -21,11 +21,11 @@ struct PackedEntities{S,T} <: AbstractPackedTable{String}
 end
 PackedEntities(tab::PackedTable) = PackedEntities(tab.offsetvec, tab.namtab)
 Base.getindex(str::PackedEntities, ind::Integer) =
-    _unpackword(str.namtab[str.offsetvec[ind]+1:str.offsetvec[ind+1]])
+    _unpackword(_tab, str.namtab[str.offsetvec[ind]+1:str.offsetvec[ind+1]])
 
 VER = UInt32(1)
 
-struct Unicode_Table{S,T,V} <: AbstractEntityTable
+struct Unicode_Table{S,T,V}
     ver::UInt32
     tim::String
     inf::String
@@ -40,14 +40,17 @@ struct Unicode_Table{S,T,V} <: AbstractEntityTable
     ind32::Vector{UInt16}
 end
 
-function __init__()
-    global _tab =
-        Unicode_Table(StrTables.load(joinpath(Pkg.dir("Unicode_Entities"), "data", "unicode.dat"))...)
-    global _names = PackedEntities(_tab.nam)
+struct Unicode_Entity <: AbstractEntityTable
+    tab::Unicode_Table
+    nam::PackedEntities
 end
 
-const _empty_str = ""
-const _empty_str_vec = Vector{String}()
+function __init__()
+    tab = Unicode_Table(StrTables.load(joinpath(Pkg.dir("Unicode_Entities"),
+                                                "data", "unicode.dat"))...)
+    nam = PackedEntities(tab.nam)
+    global default = Unicode_Entity(tab, nam)
+end
 
 """
 Internal function to unpack the packed Unicode entity names
@@ -62,7 +65,6 @@ Unicode has a very limited character set for the entity names, 0-9, A-Z, -, (, a
 38-53 represents up to 16*256 words stored in the wrd2 table
 54-255 represent 202 words stored in the wrd1 table
 """
-_unpackword(v::Vector{UInt8}) = _unpackword(v, _tab.wrd1, _tab.wrd2)
 function _unpackword(v::Vector{UInt8}, w1, w2)
     io = IOBuffer()
     pos = 0
@@ -90,39 +92,32 @@ function _unpackword(v::Vector{UInt8}, w1, w2)
             prevw = true
         end
     end
-    @static VERSION < v"0.6-" ? takebuf_string(io) : String(take!(io))
+    String(take!(io))
+end
+_unpackword(tab, v::Vector{UInt8}) = _unpackword(v, tab.wrd1, tab.wrd2)
+
+## Override methods
+
+StrTables._get_table(ent::Unicode_Entity) = ent.tab
+StrTables._get_names(ent::Unicode_Entity) = ent.nam
+
+function StrTables._get_str(ent::Unicode_Entity, ind)
+    tab = ent.tab
+    string(Char(ind <= tab.base32 ? tab.val16[ind] : tab.val32[ind - tab.base32] + 0x10000))
 end
 
-_get_str(ind) =
-    string(Char(ind <= _tab.base32 ? _tab.val16[ind] : _tab.val32[ind - _tab.base32] + 0x10000))
-    
-function _get_strings(val::T, tab::Vector{T}, ind::Vector{UInt16}) where {T}
-    rng = searchsorted(tab, val)
-    isempty(rng) && return _empty_str_vec
-    _names[ind[rng]]
+StrTables.lookupname(tab::Unicode_Entity, str::AbstractString) =
+    rng = searchsorted(tab.nam, uppercase(str))
+    isempty(rng) ? StrTables._empty_str : _get_str(tab.tab, tab.tab.ind[rng.start])
 end
 
-function lookupname(str::AbstractString)
-    rng = searchsorted(_names, uppercase(str))
-    isempty(rng) ? _empty_str : _get_str(_tab.ind[rng.start])
-end
+StrTables.matches(ent::Unicode_Entity, vec::Vector{T}) where {T} =
+    length(vec) == 1 ? matchchar(ent, vec[1]) : StrTables._empty_str_vec
 
-matchchar(ch::UInt32) =
-    (ch <= 0x0ffff
-     ? _get_strings(ch%UInt16, _tab.val16, _tab.ind16)
-     : (ch <= 0x1ffff ? _get_strings(ch%UInt16, _tab.val32, _tab.ind32) : _empty_str_vec))
-matchchar(ch::Char) = matchchar(UInt32(ch))
+StrTables.longestmatches(ent::Unicode_Entity, vec::Vector{T}) where {T} =
+    isempty(vec) ? StrTables._empty_str_vec : matchchar(ent, uppercase(vec[1]))
 
-matches(str::AbstractString) = matches(convert(Vector{Char}, str))
-matches(vec::Vector{Char}) = length(vec) == 1 ? matchchar(vec[1]) : _empty_str_vec
-
-longestmatches(str::AbstractString) = longestmatches(convert(Vector{Char},str))
-longestmatches(vec::Vector{Char}) = isempty(vec) ? _empty_str_vec : matchchar(uppercase(vec[1]))
-
-completions(str::AbstractString) = completions(String(str))
-function completions(str::String)
-    str = uppercase(str)
-    [nam for nam in _names if startswith(nam, str)]
-end
+StrTables.completions(ent::Unicode_Entity, str) =
+     [nam for nam in ent.nam if startswith(nam, str)]
 
 end # module Unicode_Entities

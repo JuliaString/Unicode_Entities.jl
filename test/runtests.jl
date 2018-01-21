@@ -7,6 +7,12 @@ using Unicode_Entities
 
 UE = Unicode_Entities
 
+ue_matchchar(ch)       = UE.matchchar(UE.default, ch)
+ue_lookupname(nam)     = UE.lookupname(UE.default, nam)
+ue_longestmatches(str) = UE.longestmatches(UE.default, str)
+ue_matches(str)        = UE.matches(UE.default, str)
+ue_completions(str)    = UE.completions(UE.default, str)
+
 const datapath = joinpath(Pkg.dir(), "Unicode_Entities", "data")
 const dpath = "ftp://ftp.unicode.org/Public/UNIDATA/"
 const fname = "UnicodeData.txt"
@@ -51,20 +57,18 @@ function load_unicode_data()
 end
 
 load_unicode_data()
-uln = UE.lookupname
-umc = UE.matchchar
 
 @testset "Unicode_Entities" begin
 
     @testset "matches data file" begin
         for (i, ch) in enumerate(symval)
-            list = umc(ch)
+            list = ue_matchchar(ch)
             if !isempty(list)
                 @test symnam[i] in list
             end
         end
         for (i, nam) in enumerate(symnam)
-            str = uln(nam)
+            str = ue_lookupname(nam)
             if str != ""
                 @test symval[i] == str[1]
             end
@@ -72,46 +76,46 @@ umc = UE.matchchar
     end
         
 @testset "lookupname" begin
-    @test UE.lookupname("foobar")   == ""
-    @test UE.lookupname(SubString("My name is Spock", 12)) == ""
-    @test UE.lookupname("end of text") == "\x03" # \3
-    @test UE.lookupname("TIBETAN LETTER -A") == "\u0f60"
-    @test UE.lookupname("LESS-THAN OR SLANTED EQUAL TO") == "\u2a7d"
-    @test UE.lookupname("REVERSED HAND WITH MIDDLE FINGER EXTENDED") == "\U1f595"
+    @test ue_lookupname("foobar")   == ""
+    @test ue_lookupname(SubString("My name is Spock", 12)) == ""
+    @test ue_lookupname("end of text") == "\x03" # \3
+    @test ue_lookupname("TIBETAN LETTER -A") == "\u0f60"
+    @test ue_lookupname("LESS-THAN OR SLANTED EQUAL TO") == "\u2a7d"
+    @test ue_lookupname("REVERSED HAND WITH MIDDLE FINGER EXTENDED") == "\U1f595"
 end
 
 @testset "matches" begin
-    @test isempty(UE.matches(""))
-    @test isempty(UE.matches("\uf900"))
-    @test isempty(UE.matches(SubString("This is \uf900", 9)))
+    @test isempty(ue_matches(""))
+    @test isempty(ue_matches("\uf900"))
+    @test isempty(ue_matches(SubString("This is \uf900", 9)))
     for (chrs, exp) in (("\U1f596", ["RAISED HAND WITH PART BETWEEN MIDDLE AND RING FINGERS"]),
                         ("\u0f4a", ["TIBETAN LETTER REVERSED TA"]),
                         (".", ["FULL STOP", "PERIOD"]))
-        res = UE.matches(chrs)
+        res = ue_matches(chrs)
         @test length(res) >= length(exp)
         @test intersect(res, exp) == exp
     end
 end
 
 @testset "longestmatches" begin
-    @test isempty(UE.longestmatches("\uf900 abcd"))
-    @test isempty(UE.longestmatches(SubString("This is \uf900 abcd", 9)))
+    @test isempty(ue_longestmatches("\uf900 abcd"))
+    @test isempty(ue_longestmatches(SubString("This is \uf900 abcd", 9)))
     for (chrs, exp) in (("\U1f596 abcd", ["RAISED HAND WITH PART BETWEEN MIDDLE AND RING FINGERS"]),
                         (".abcd", ["FULL STOP", "PERIOD"]),
                         ("\u0f4a#123", ["TIBETAN LETTER REVERSED TA", "TIBETAN LETTER TTA"]))
-        res = UE.longestmatches(chrs)
+        res = ue_longestmatches(chrs)
         @test length(res) >= length(exp)
         @test intersect(res, exp) == exp
     end
 end
 
 @testset "completions" begin
-    @test isempty(UE.completions("ScottPaulJones"))
-    @test isempty(UE.completions(SubString("My name is Scott", 12)))
+    @test isempty(ue_completions("ScottPaulJones"))
+    @test isempty(ue_completions(SubString("My name is Scott", 12)))
     for (chrs, exp) in (("ZERO", ["ZERO WIDTH JOINER", "ZERO WIDTH NO-BREAK SPACE",
                                   "ZERO WIDTH NON-JOINER", "ZERO WIDTH SPACE"]),
                         ("BACK OF", ["BACK OF ENVELOPE"]))
-        res = UE.completions(chrs)
+        res = ue_completions(chrs)
         @test length(res) >= length(exp)
         @test intersect(res, exp) == exp
     end
