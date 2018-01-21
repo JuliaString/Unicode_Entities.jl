@@ -14,6 +14,7 @@ __precompile__()
 module Unicode_Entities
 
 using StrTables
+import StrTables: matchchar, matches, longmatches, _get_strings, _empty_str_vec
 
 struct PackedEntities{S,T} <: AbstractPackedTable{String}
     offsetvec::Vector{T}
@@ -106,7 +107,7 @@ function StrTables._get_str(ent::Unicode_Entity, ind)
     string(Char(ind <= tab.base32 ? tab.val16[ind] : tab.val32[ind - tab.base32] + 0x10000))
 end
 
-StrTables.lookupname(tab::Unicode_Entity, str::AbstractString) =
+function StrTables.lookupname(tab::Unicode_Entity, str::AbstractString)
     rng = searchsorted(tab.nam, uppercase(str))
     isempty(rng) ? StrTables._empty_str : _get_str(tab.tab, tab.tab.ind[rng.start])
 end
