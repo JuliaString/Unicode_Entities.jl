@@ -99,7 +99,7 @@ end
 
 function StrTables.lookupname(tab::Unicode_Table, str::AbstractString)
     rng = searchsorted(tab.nam, uppercase(str))
-    isempty(rng) ? StrTables._empty_str : _get_str(tab, tab.ind[rng.start])
+    isempty(rng) ? StrTables._empty_str : StrTables._get_str(tab, tab.ind[rng.start])
 end
 
 StrTables.matches(tab::Unicode_Table, vec::Vector{T}) where {T} =
@@ -108,7 +108,7 @@ StrTables.matches(tab::Unicode_Table, vec::Vector{T}) where {T} =
 StrTables.longestmatches(tab::Unicode_Table, vec::Vector{T}) where {T} =
     isempty(vec) ? StrTables._empty_str_vec : matchchar(tab, uppercase(vec[1]))
 
-function StrTables.completions(tab::Unicode_Table, str)
+function StrTables.completions(tab::Unicode_Table, str::AbstractString)
     up = uppercase(str)
     [nam for nam in tab.nam if startswith(nam, up)]
 end
