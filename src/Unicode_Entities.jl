@@ -15,45 +15,35 @@ module Unicode_Entities
 
 using StrTables
 
-struct PackedEntities{S,T} <: AbstractPackedTable{String}
-    offsetvec::Vector{T}
-    namtab::Vector{S}
-end
-PackedEntities(tab::PackedTable) = PackedEntities(tab.offsetvec, tab.namtab)
-
 VER = UInt32(1)
 
-struct Unicode_Table{S,T,V}
+struct PackedNames{T,S,O} <: AbstractPackedTable{T}
+    offsetvec::Vector{O}
+    namtab::Vector{S}
+    wrd1::StrTable{T}           # This has sorted words for 1-byte
+    wrd2::StrTable{T}           # This has sorted words for 2-byte
+end
+
+Base.getindex(tab::PackedNames, ind::Integer) =
+    _unpackword(tab.namtab[tab.offsetvec[ind] + 1 : tab.offsetvec[ind+1]], tab.wrd1, tab.wrd2)
+
+struct Unicode_Table{S,T,V} <: AbstractEntityTable
     ver::UInt32
     tim::String
     inf::String
     base32::UInt32
-    nam::PackedTable{S,V}	# This has packed byte vectors
+    nam::PackedNames{S,T}
     ind::Vector{UInt16}
-    wrd1::StrTable{T}           # This has sorted words for 1-byte
-    wrd2::StrTable{T}           # This has sorted words for 2-byte
     val16::Vector{UInt16}
     ind16::Vector{UInt16}
     val32::Vector{UInt16}
     ind32::Vector{UInt16}
 end
 
-struct Unicode_Entity <: AbstractEntityTable
-    tab::Unicode_Table
-    nam::PackedEntities
-end
-
-function Base.getindex(ent::Unicode_Entity, ind::Integer)
-    str = ent.nam
-    _unpackword(str.namtab[str.offsetvec[ind] + 1 : str.offsetvec[ind+1]],
-                ent.tab.wrd1, ent.tab.wrd2)
-end
-
 function __init__()
-    tab = Unicode_Table(StrTables.load(joinpath(Pkg.dir("Unicode_Entities"),
-                                                "data", "unicode.dat"))...)
-    nam = PackedEntities(tab.nam)
-    global default = Unicode_Entity(tab, nam)
+    (ver, tim, inf, base32, nam, ind, wrd1, wrd2, val16, ind16, val32, ind32) =
+        StrTables.load(joinpath(Pkg.dir("Unicode_Entities"), "data", "unicode.dat"))
+    global default = Unicode_Table(ver, tim, inf, base32, PackedNames(nam, wrd1, wrd2), ind,
 end
 
 """
@@ -101,28 +91,24 @@ end
 
 ## Override methods
 
-StrTables._get_table(ent::Unicode_Entity) = ent.tab
-StrTables._get_names(ent::Unicode_Entity) = ent
-
-function StrTables._get_str(ent::Unicode_Entity, ind)
-    tab = ent.tab
+function StrTables._get_str(tab::Unicode_Table, ind)
     string(Char(ind <= tab.base32 ? tab.val16[ind] : tab.val32[ind - tab.base32] + 0x10000))
 end
 
-function StrTables.lookupname(ent::Unicode_Entity, str::AbstractString)
-    rng = searchsorted(ent.nam, uppercase(str))
-    isempty(rng) ? StrTables._empty_str : _get_str(ent.tab, ent.tab.ind[rng.start])
+function StrTables.lookupname(tab::Unicode_Table, str::AbstractString)
+    rng = searchsorted(tab.nam, uppercase(str))
+    isempty(rng) ? StrTables._empty_str : _get_str(tab, tab.ind[rng.start])
 end
 
-StrTables.matches(ent::Unicode_Entity, vec::Vector{T}) where {T} =
-    length(vec) == 1 ? matchchar(ent, vec[1]) : StrTables._empty_str_vec
+StrTables.matches(tab::Unicode_Table, vec::Vector{T}) where {T} =
+    length(vec) == 1 ? matchchar(tab, vec[1]) : StrTables._empty_str_vec
 
-StrTables.longestmatches(ent::Unicode_Entity, vec::Vector{T}) where {T} =
-    isempty(vec) ? StrTables._empty_str_vec : matchchar(ent, uppercase(vec[1]))
+StrTables.longestmatches(tab::Unicode_Table, vec::Vector{T}) where {T} =
+    isempty(vec) ? StrTables._empty_str_vec : matchchar(tab, uppercase(vec[1]))
 
-function StrTables.completions(ent::Unicode_Entity, str)
+function StrTables.completions(tab::Unicode_Table, str)
     up = uppercase(str)
-    [nam for nam in ent.nam if startswith(nam, up)]
+    [nam for nam in tab.nam if startswith(nam, up)]
 end
 
 end # module Unicode_Entities
