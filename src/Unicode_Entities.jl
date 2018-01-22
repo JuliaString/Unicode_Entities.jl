@@ -20,8 +20,6 @@ struct PackedEntities{S,T} <: AbstractPackedTable{String}
     namtab::Vector{S}
 end
 PackedEntities(tab::PackedTable) = PackedEntities(tab.offsetvec, tab.namtab)
-Base.getindex(str::PackedEntities, ind::Integer) =
-    _unpackword(_tab, str.namtab[str.offsetvec[ind]+1:str.offsetvec[ind+1]])
 
 VER = UInt32(1)
 
@@ -43,6 +41,12 @@ end
 struct Unicode_Entity <: AbstractEntityTable
     tab::Unicode_Table
     nam::PackedEntities
+end
+
+function Base.getindex(ent::Unicode_Entity, ind::Integer)
+    str = ent.nam
+    _unpackword(str.namtab[str.offsetvec[ind] + 1 : str.offsetvec[ind+1]],
+                ent.tab.wrd1, ent.tab.wrd2)
 end
 
 function __init__()
@@ -94,21 +98,20 @@ function _unpackword(v::Vector{UInt8}, w1, w2)
     end
     String(take!(io))
 end
-_unpackword(tab, v::Vector{UInt8}) = _unpackword(v, tab.wrd1, tab.wrd2)
 
 ## Override methods
 
 StrTables._get_table(ent::Unicode_Entity) = ent.tab
-StrTables._get_names(ent::Unicode_Entity) = ent.nam
+StrTables._get_names(ent::Unicode_Entity) = ent
 
 function StrTables._get_str(ent::Unicode_Entity, ind)
     tab = ent.tab
     string(Char(ind <= tab.base32 ? tab.val16[ind] : tab.val32[ind - tab.base32] + 0x10000))
 end
 
-function StrTables.lookupname(tab::Unicode_Entity, str::AbstractString)
-    rng = searchsorted(tab.nam, uppercase(str))
-    isempty(rng) ? StrTables._empty_str : _get_str(tab.tab, tab.tab.ind[rng.start])
+function StrTables.lookupname(ent::Unicode_Entity, str::AbstractString)
+    rng = searchsorted(ent.nam, uppercase(str))
+    isempty(rng) ? StrTables._empty_str : _get_str(ent.tab, ent.tab.ind[rng.start])
 end
 
 StrTables.matches(ent::Unicode_Entity, vec::Vector{T}) where {T} =
