@@ -27,12 +27,12 @@ end
 Base.getindex(tab::PackedNames, ind::Integer) =
     _unpackword(tab.namtab[tab.offsetvec[ind] + 1 : tab.offsetvec[ind+1]], tab.wrd1, tab.wrd2)
 
-struct Unicode_Table{S,T,V} <: AbstractEntityTable
+struct Unicode_Table{T} <: AbstractEntityTable
     ver::UInt32
     tim::String
     inf::String
     base32::UInt32
-    nam::PackedNames{S,T}
+    nam::PackedNames{T}
     ind::Vector{UInt16}
     val16::Vector{UInt16}
     ind16::Vector{UInt16}
