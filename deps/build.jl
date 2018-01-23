@@ -18,7 +18,7 @@ function process_line(vec::Vector{T}) where {T<:AbstractString}
     num = vec[1]
     str = vec[2]
     alias = vec[11]
-    ch = parse(UInt32, num, 16)
+    ch = parse_hex(UInt32, num)
     str[1] == '<' &&
         return str == "<control>" ? (alias != "", ch, _empty_string, alias) : _empty_val
     # Don't save names that simply contain hex representation
