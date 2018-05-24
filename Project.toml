@@ -1,0 +1,9 @@
+desc = "Entities from Unicode data tables"
+keywords = ["Entities", "Unicode"]
+license = "MIT"
+name = "Unicode_Entities"
+repo = "https://github.com/JuliaString/Unicode_Entities.jl.git"
+deps = ["Pkg", "StrTables", "Test", "Unicode"]
+git-tree-sha1 = "8f5e34a7e433425b46154e362e72215362004c49"
+uuid = "a8aa15d3-c567-5e9f-b6cc-4b0f97f09cf7"
+version = "0.2.2"
