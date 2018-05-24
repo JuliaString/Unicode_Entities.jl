@@ -7,7 +7,7 @@ using StrTables, Unicode_Entities
 
 const def = Unicode_Entities.default
 
-const datapath = joinpath(pkg_dir("Unicode_Entities"), "data")
+const datapath = "../data"
 const dpath = "ftp://ftp.unicode.org/Public/UNIDATA/"
 const fname = "UnicodeData.txt"
 

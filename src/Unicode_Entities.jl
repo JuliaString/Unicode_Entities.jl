@@ -42,7 +42,7 @@ end
 
 function __init__()
     (ver, tim, inf, base32, nam, ind, wrd1, wrd2, val16, ind16, val32, ind32) =
-        StrTables.load(joinpath(pkg_dir("Unicode_Entities"), "data", "unicode.dat"))
+        StrTables.load(joinpath(@__DIR__, "../data/unicode.dat"))
     global default = Unicode_Table(ver, tim, inf, base32,
                                    PackedNames(nam.offsetvec, nam.namtab, wrd1, wrd2),
                                    ind, val16, ind16, val32, ind32)

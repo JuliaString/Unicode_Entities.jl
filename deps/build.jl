@@ -4,7 +4,7 @@ using StrTables
 
 const VER = UInt32(1)
 
-const datapath = joinpath(pkg_dir("Unicode_Entities"), "data")
+const datapath = "../data"
 const dpath = "http://ftp.unicode.org/Public/UNIDATA/"
 const inpname = "UnicodeData.txt"
 const fname = "unicode.dat"
