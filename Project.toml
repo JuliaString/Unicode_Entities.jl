@@ -1,15 +1,14 @@
-name = "Unicode_Entities"
-desc = "Entities from Unicode data tables"
 authors = ["ScottPJones <scottjones@alum.mit.edu>"]
+desc = "Entities from Unicode data tables"
 keywords = ["Entities", "Unicode"]
 license = "MIT"
+name = "Unicode_Entities"
+repo-rev = ""
+repo-url = "https://github.com/JuliaString/Unicode_Entities.jl.git"
 uuid = "a8aa15d3-c567-5e9f-b6cc-4b0f97f09cf7"
-repo = "https://github.com/JuliaString/Unicode_Entities.jl.git"
-git-tree-sha1 = "8f5e34a7e433425b46154e362e72215362004c49"
 
-version = "0.2.2"
 [deps]
-StrTables = "9700d1a9-a7c8-5760-9816-a99fda30bb8f"
 Pkg = "fe1c5a76-5840-53d2-82f9-288dd83ce2ce"
+StrTables = "9700d1a9-a7c8-5760-9816-a99fda30bb8f"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Unicode = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
