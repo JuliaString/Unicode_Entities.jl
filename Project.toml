@@ -6,6 +6,7 @@ name = "Unicode_Entities"
 repo-rev = ""
 repo-url = "https://github.com/JuliaString/Unicode_Entities.jl.git"
 uuid = "a8aa15d3-c567-5e9f-b6cc-4b0f97f09cf7"
+version = "0.2.3"
 
 [deps]
 Pkg = "fe1c5a76-5840-53d2-82f9-288dd83ce2ce"
