@@ -15,8 +15,8 @@
 [travis-s-img]: https://travis-ci.org/JuliaString/Unicode_Entities.jl.svg
 [travis-m-img]: https://travis-ci.org/JuliaString/Unicode_Entities.jl.svg?branch=master
 
-[app-s-url]:    https://ci.appveyor.com/project/ScottPJones/unicode_entities-jl
-[app-m-url]:    https://ci.appveyor.com/project/ScottPJones/unicode_entities-jl/branch/master
+[app-s-url]:    https://ci.appveyor.com/project/ScottPJones/unicode-entities-jl
+[app-m-url]:    https://ci.appveyor.com/project/ScottPJones/unicode-entities-jl/branch/master
 [app-s-img]:    https://ci.appveyor.com/api/projects/status/c1luci97ry8fxdt7?svg=true
 [app-m-img]:    https://ci.appveyor.com/api/projects/status/c1luci97ry8fxdt7/branch/master?svg=true
 
