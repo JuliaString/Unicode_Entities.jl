@@ -81,7 +81,7 @@ function _unpackword(v::Vector{UInt8}, w1, w2)
         else
             pos != 1 && (prevw || v[pos-1]>0x1) && write(io, ' ')
             if ch < 0x36
-                write(io, w2[((ch - 0x25)%UInt16<<8 | v[pos+=1])-255])
+                write(io, w2[((((ch - 0x25)%UInt16)<<8) | v[pos+=1])-255])
             else
                 write(io, w1[ch - 0x35])
             end
