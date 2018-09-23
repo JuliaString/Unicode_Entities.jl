@@ -5,7 +5,7 @@ using StrTables
 const VER = UInt32(1)
 
 const datapath = "../data"
-const dpath = "http://ftp.unicode.org/Public/UNIDATA/"
+const dpath = "https://www.unicode.org/Public/UCD/latest/ucd/"
 const inpname = "UnicodeData.txt"
 const fname = "unicode.dat"
 const disp = [false]
