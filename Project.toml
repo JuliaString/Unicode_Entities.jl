@@ -4,7 +4,7 @@ keywords = ["Entities", "Unicode"]
 license = "MIT"
 name = "Unicode_Entities"
 uuid = "a8aa15d3-c567-5e9f-b6cc-4b0f97f09cf7"
-version = "0.2.6"
+version = "0.2.8"
 
 [deps]
 Pkg     = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
