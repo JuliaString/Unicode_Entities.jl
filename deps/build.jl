@@ -267,15 +267,16 @@ function make_tables(datapath, dpath, fname)
     srtnam = symnam[srtind]
     srtval = symval[srtind]
     entmap, map1, map2 = split_words(srtnam)
-    println("Creating tables")
     base32, indvec, vec16, ind16, vec32, ind32 = split_tables(srtval)
     (VER, string(now()), src, base32, entmap, indvec, map1, map2, vec16, ind16, vec32, ind32)
 end
 
-println("Creating tables")
 savfile = joinpath(datapath, fname)
-tup = nothing
-if !isfile(savfile)
+if isfile(savfile)
+    println("Tables already exist")
+else
+    tup = nothing
+    println("Creating tables")
     try
         global tup
         tup = make_tables(datapath, dpath, inpname)
@@ -284,5 +285,5 @@ if !isfile(savfile)
     end
     println("Saving tables to ", savfile)
     StrTables.save(savfile, tup)
+    println("Done")
 end
-println("Done")
