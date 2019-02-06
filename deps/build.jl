@@ -157,7 +157,7 @@ function packword(inpvec::Vector, wrdmap, wrd_vec, wrd_dict)
         else
             str = wrd_vec[val16]
             !isempty(out) && (prevw < 0x26 || str[1] == '-') && push!(out, 0x00)
-            if search(str, '-') != 0
+            if '-' in str
                 parts = split(str, '-')
                 hasparts = true
                 disp[] && print(parts)
@@ -208,7 +208,7 @@ function split_words(input::Vector{<:AbstractString})
                 push!(wrd_frq, 0)
                 push!(wrd_loc, i) # location first found (may be only location)
                 wrd_dict[onewrd] = val
-                if search(onewrd, '-') != 0
+                if '-' in onewrd
                     allparts = split(onewrd, '-')
                     for part in allparts
                         part == "" && continue
