@@ -4,7 +4,7 @@ keywords = ["Entities", "Unicode"]
 license = "MIT"
 name = "Unicode_Entities"
 uuid = "a8aa15d3-c567-5e9f-b6cc-4b0f97f09cf7"
-version = "1.0.0"
+version = "1.0.1"
 
 [deps]
 StrTables = "9700d1a9-a7c8-5760-9816-a99fda30bb8f"
