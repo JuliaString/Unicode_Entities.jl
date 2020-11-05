@@ -36,3 +36,5 @@ Unicode_Entities.jl
 This builds tables for looking up Unicode entity names and returning the Unicode character(s),
 looking up a character or pair of characters and finding Unicode entity names that return it/them,
 and finding all of the Unicode name completions for a particular string, if any.
+
+Version 1.1.x has is based on Unicode version 13.0.0
