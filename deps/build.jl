@@ -4,7 +4,7 @@ using StrTables
 
 const VER = UInt32(1)
 
-const datapath = "../data"
+const datapath = joinpath(@__DIR__, "..", "data")
 const dpath = "https://www.unicode.org/Public/UCD/latest/ucd/"
 const inpname = "UnicodeData.txt"
 const fname = "unicode.dat"
@@ -48,10 +48,15 @@ function load_unicode_data(datapath, dpath, fname)
         println("Loading Unicode Data: ", lname)
         src = lname
     else
-        src = string(dpath, fname)
-        println("Downloading Unicode Data: ", src)
-        download(src, lname)
-        println("Saved to: ", lname)
+        try
+            src = string(dpath, fname)
+            println("Downloading Unicode Data: ", src)
+            download(src, lname)
+            println("Saved to: ", lname)
+        catch ex
+            println("Unable to download $src and save in $lname")
+            rethrow(ex)
+        end
     end
     symnam = String[]
     symval = UInt32[]
@@ -280,10 +285,10 @@ else
     try
         global tup
         tup = make_tables(datapath, dpath, inpname)
+        println("Saving tables to ", savfile)
+        StrTables.save(savfile, tup)
+        println("Done")
     catch ex
         println(sprint(showerror, ex, catch_backtrace()))
     end
-    println("Saving tables to ", savfile)
-    StrTables.save(savfile, tup)
-    println("Done")
 end

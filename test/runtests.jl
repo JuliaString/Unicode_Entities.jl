@@ -1,13 +1,13 @@
 using StrTables, Unicode_Entities
 
-@static VERSION < v"0.7.0-DEV" ? (using Base.Test) : (using Test)
+using Test
 
 # Test the functions lookupname, matches, longestmatches, completions
 # Check that characters from all 3 tables (BMP, non-BMP, 2 character) are tested
 
 const def = Unicode_Entities.default
 
-const datapath = "../data"
+const datapath = joinpath(pathof(Unicode_Entities), "data")
 const dpath = "ftp://ftp.unicode.org/Public/UNIDATA/"
 const fname = "UnicodeData.txt"
 
@@ -17,7 +17,15 @@ const symval = Vector{Char}()
 """Load up all names and characters from original data file"""
 function load_unicode_data()
     lname = joinpath(datapath, fname)
-    isfile(lname) || download(string(dpath, fname), lname)
+    if !isfile(lname)
+        try
+            lname = download(string(dpath, fname), lname)
+        catch ex
+            println("Error loading \"$(string(dpath, fname))\" and saving in \"$lname\"")
+            println(sprint(showerror, ex, catch_backtrace()))
+            return false
+        end
+    end
     aliasnam = Vector{String}()
     aliasval = Vector{Char}()
     open(lname, "r") do f
@@ -48,13 +56,11 @@ function load_unicode_data()
             push!(symval, ch)
         end
     end
+    true
 end
 
-load_unicode_data()
-
 @testset "Unicode_Entities" begin
-
-    @testset "matches data file" begin
+if load_unicode_data() @testset "matches data file" begin
         for (i, ch) in enumerate(symval)
             list = matchchar(def, ch)
             if !isempty(list)
@@ -68,6 +74,7 @@ load_unicode_data()
             end
         end
     end
+end
         
 @testset "lookupname" begin
     @test lookupname(def, "foobar")   == ""
