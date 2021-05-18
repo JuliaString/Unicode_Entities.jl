@@ -8,15 +8,13 @@
 [release]:      https://img.shields.io/github/release/JuliaString/Unicode_Entities.jl.svg
 [release-date]: https://img.shields.io/github/release-date/JuliaString/Unicode_Entities.jl.svg
 
+[checks]:       https://img.shields.io/github/checks-status/JuliaString/Unicode_Entities.jl/master
+
 [license-img]:  http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat
 [license-url]:  LICENSE.md
 
 [gitter-img]:   https://badges.gitter.im/Join%20Chat.svg
 [gitter-url]:   https://gitter.im/JuliaString/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
-
-[travis-url]:   https://travis-ci.org/JuliaString/Unicode_Entities.jl
-[travis-s-img]: https://travis-ci.org/JuliaString/Unicode_Entities.jl.svg
-[travis-m-img]: https://travis-ci.org/JuliaString/Unicode_Entities.jl.svg?branch=master
 
 [codecov-url]:  https://codecov.io/gh/JuliaString/Unicode_Entities.jl
 [codecov-img]:  https://codecov.io/gh/JuliaString/Unicode_Entities.jl/branch/master/graph/badge.svg
@@ -27,8 +25,7 @@
 
 | **Julia Version** | **Unit Tests** | **Coverage** |
 |:------------------:|:------------------:|:---------------------:|
-| [![][julia-release]][julia-url] | [![][travis-s-img]][travis-url] | [![][codecov-img]][codecov-url]
-| Julia Latest | [![][travis-m-img]][travis-url] | [![][codecov-img]][codecov-url]
+| [![][julia-release]][julia-url] | [![][checks]][pkg-url] | [![][codecov-img]][codecov-url]
 
 Unicode_Entities.jl
 ====================================================================
