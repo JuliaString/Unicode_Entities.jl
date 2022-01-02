@@ -34,4 +34,5 @@ This builds tables for looking up Unicode entity names and returning the Unicode
 looking up a character or pair of characters and finding Unicode entity names that return it/them,
 and finding all of the Unicode name completions for a particular string, if any.
 
-Version 1.1.x has is based on Unicode version 13.0.0
+Version 1.1.x is based on Unicode version 13.0.0
+Version 1.2.x is based on Unicode version 14.0.0
