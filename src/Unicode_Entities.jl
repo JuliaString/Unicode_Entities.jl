@@ -13,7 +13,7 @@ __precompile__()
 """
 module Unicode_Entities
 
-using StrTables
+using StrTables, RelocatableFolders
 
 VER = UInt32(1)
 
@@ -40,9 +40,10 @@ struct Unicode_Table{T} <: AbstractEntityTable
     ind32::Vector{UInt16}
 end
 
+const DATA_PATH = @path joinpath(@__DIR__, "../data", "unicode.dat")
+
 function __init__()
-    (ver, tim, inf, base32, nam, ind, wrd1, wrd2, val16, ind16, val32, ind32) =
-        StrTables.load(joinpath(@__DIR__, "../data/unicode.dat"))
+    (ver, tim, inf, base32, nam, ind, wrd1, wrd2, val16, ind16, val32, ind32) = StrTables.load(DATA_PATH)
     global default = Unicode_Table(ver, tim, inf, base32,
                                    PackedNames(nam.offsetvec, nam.namtab, wrd1, wrd2),
                                    ind, val16, ind16, val32, ind32)

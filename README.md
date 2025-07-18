@@ -37,3 +37,4 @@ and finding all of the Unicode name completions for a particular string, if any.
 Version 1.1.x is based on Unicode version 13.0.0
 Version 1.2.x is based on Unicode version 14.0.0
 Version 1.3.x is based on Unicode version 15.1.0
+Version 1.4.x is based on Unicode version 16.0.0
