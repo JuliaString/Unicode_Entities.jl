@@ -4,7 +4,7 @@ keywords = ["Entities", "Unicode"]
 license = "MIT"
 name = "Unicode_Entities"
 uuid = "a8aa15d3-c567-5e9f-b6cc-4b0f97f09cf7"
-version = "1.4.0"
+version = "1.5.0"
 
 [deps]
 RelocatableFolders = "05181044-ff0b-4ac5-8273-598c1e38db00"

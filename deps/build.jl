@@ -4,8 +4,9 @@ using StrTables
 
 const VER = UInt32(1)
 
+const ver = "18.0.0" # otherwise "latest"
 const datapath = joinpath(@__DIR__, "..", "data")
-const dpath = "https://www.unicode.org/Public/UCD/latest/ucd/"
+const dpath = "https://www.unicode.org/Public/$ver/ucd/"
 const inpname = "UnicodeData.txt"
 const fname = "unicode.dat"
 const disp = [false]
